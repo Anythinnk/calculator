@@ -59,7 +59,9 @@
 header {
     position: absolute;
     right: 0.5rem;
+    right: min(0.5rem, 0.75vw);
     top: 0.5rem;
+    top: min(0.5rem, 1.2vh);
     display: flex;
     align-items: center;
 }
@@ -342,9 +344,9 @@ button:not(:focus-visible) {
 }
 
 .history-record {
-    height: 10vh;
+    min-height: 7vh;
     margin: var(--button-spacing) 0;
-    padding: 0 0.4rem 0 1.3rem;
+    padding: 0 0.4rem;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -360,13 +362,18 @@ button:not(:focus-visible) {
     background-color: var(--button-color-active);
 }
 
+.history-record span {
+    overflow-wrap: anywhere;
+    text-align: right;
+}
+
 .equation {
     color: var(--font-faded-color);
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 .result {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
 }
 
 /* defining all other grid-areas */
@@ -462,20 +469,60 @@ button:not(:focus-visible) {
     grid-area: nine;
 }
 
-@media only screen and (min-width: 481px) {
+@media only screen and (min-width: 481px) and (min-height: 481px) {
     :root {
-        font-size: 90%;
+        font-size: 92.5%;
     }
 }
 
-@media only screen and (min-width: 641px) {
-    :root {
-        font-size: 95%;
-    }
-}
-
-@media only screen and (min-width: 961px) {
+@media only screen and (min-width: 641px) and (min-height: 641px) {
     :root {
         font-size: 100%;
+    }
+}
+
+@media only screen and (min-width: 961px) and (min-height: 961px) {
+    :root {
+        font-size: 107.5%;
+    }
+}
+
+@media only screen and (min-aspect-ratio: 6/5) {
+    #calculator {
+        grid-template-rows: 0.5fr 1.3fr repeat(6, 1.1fr);
+        grid-template-columns: repeat(4, 1fr) 2fr;
+        grid-template-areas:    "record     record          record      record      history"
+                                "display    display         display     display     history"
+                                "percent    clear-entry     clear-all   backspace   history"
+                                "inverse    squared         sqrt        divide      history"
+                                "seven      eight           nine        times       history"
+                                "four       five            six         minus       history"
+                                "one        two             three       plus        history"
+                                "negative   zero            decimal     equals      history";
+        min-width: 300px;
+        min-height: 240px;
+    }
+
+    #calculator::before {
+        display: none;
+    }
+    
+    #calculator.history::before {
+        display: none;
+    }
+
+    #history-btn {
+        display: none;
+    }
+
+    #history {
+        grid-area: history;
+        z-index: auto;
+        background-color: var(--calculator-bg-color);
+        opacity: 1;
+    }
+
+    #close-history-btn{
+        display: none;
     }
 }
