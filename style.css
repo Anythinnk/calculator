@@ -326,7 +326,24 @@ button:not(:focus-visible) {
     }
 }
 
-#close-history-btn{
+#history-header {
+    display: none;
+    align-self: center;
+    padding: calc(1.3*var(--button-spacing)) 0;
+    margin: 0 0 calc(2*var(--button-spacing));
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-bottom: var(--button-spacing) solid var(--button-color-bright);
+}
+
+#no-history-message {
+    margin: var(--button-spacing) 0;
+    padding: 0 0.4rem;
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+#close-history-btn {
     background-color: transparent;
     width: 2rem;
     align-self: flex-end;
@@ -520,6 +537,10 @@ button:not(:focus-visible) {
         z-index: auto;
         background-color: var(--calculator-bg-color);
         opacity: 1;
+    }
+
+    #history-header {
+        display: initial;
     }
 
     #close-history-btn{
