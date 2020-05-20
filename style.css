@@ -239,22 +239,19 @@ button sub {
 }
 
 button.number,
-#negative, 
-#decimal {
+#negative {
     background-color: var(--button-color-num);
     color: var(--font-base-color);
     font-weight: bold;
 }
 
 button:hover,
-#negative:hover,
-#decimal:hover {
+#negative:hover {
     background-color: var(--button-color-hover);
 }
 
 button:active,
-#negative:active,
-#decimal:active {
+#negative:active {
     background-color: var(--button-color-active);
 }
 
