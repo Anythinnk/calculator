@@ -225,9 +225,9 @@ button {
 
 #backspace,
 #divide,
-#times,
-#minus,
-#plus,
+#multiply,
+#subtract,
+#add,
 #equals,
 #decimal {
     font-size: 1.5rem;
@@ -423,15 +423,15 @@ button:not(:focus-visible) {
     grid-area: divide;
 }
 
-#times {
+#multiply {
     grid-area: times;
 }
 
-#minus {
+#subtract {
     grid-area: minus;
 }
 
-#plus {
+#add {
     grid-area: plus;
 }
 

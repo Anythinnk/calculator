@@ -8,9 +8,27 @@ const validKeys = [ '%',    'Delete',   'Escape',   'Backspace',
                     'F9',   '0',        '.',        '=', 'Enter']
 const immediateFuncs = ['percent', 'inverse', 'squared', 'sqrt'];
 const calcOnNextFuncs = ['divide', 'multiply', 'subtract', 'add'];
+const identifierSymbol = {
+    'divide': '\u00f7',
+    'multiply': '\u00d7',
+    'subtract': '\u2212',
+    'add': '\u002b',
+    'inverse': '1/',
+    'squared': 'sqr',
+    'sqrt': '\u221a'
+}
 
+let prevOper; // prev operator for calcs on currArr
 let currArr; // array for calcs
 let recordArr; // array of strings to join for display
+let displayIsResult;
+
+function resetVars() {
+    prevOper = null;
+    currArr = [];
+    recordArr = [];
+    displayIsResult = false;
+}
 
 function percent(a, b) {
     return a*b/100;
@@ -23,14 +41,17 @@ function clearEntry() {
 function clearAll() {
     clearEntry();
     recordEle.textContent = '';
+    resetVars();
 }
 
 function backspace() {
-    let currText = displayEle.textContent;
-    if (currText.length > 1) {
-        displayEle.textContent = currText.substring(0, currText.length - 1);
-    } else {
-        displayEle.textContent = '0';
+    if (!displayIsResult) {
+        let currText = displayEle.textContent;
+        if (currText.length > 1) {
+            displayEle.textContent = currText.substring(0, currText.length - 1);
+        } else {
+            displayEle.textContent = '0';
+        }
     }
 }
 
@@ -80,6 +101,10 @@ function negative() {
 }
 
 function numberInput(str) {
+    if (displayIsResult) {
+        clearEntry();
+        displayIsResult = !displayIsResult;
+    }
     let currText = displayEle.textContent;
     if (currText === '0') {
         if (str !== '.') {
@@ -89,6 +114,48 @@ function numberInput(str) {
         currText += str;
     }
     displayEle.textContent = currText;
+}
+
+function operatorInput(identifier) {
+    let currText = displayEle.textContent;
+    // + - * /
+    if (calcOnNextFuncs.includes(identifier)) {
+        if (!displayIsResult) {
+            currArr.push(Number(currText));
+            recordArr.push(Number(currText));
+            if (prevOper !== null) {
+                let result;
+                switch (prevOper) {
+                    case 'divide':
+                        result = divide(...currArr);
+                        break;
+                    case 'multiply':
+                        result = multiply(...currArr);
+                        break;
+                    case 'subtract':
+                        result = subtract(...currArr);
+                        break;
+                    case 'add':
+                        result = add(...currArr);
+                }
+                currArr = [result];
+                displayEle.textContent = result;
+            }
+            displayIsResult = !displayIsResult;
+        } else {
+            recordArr.pop();
+        }
+        prevOper = identifier;
+        recordArr.push(identifierSymbol[identifier]);
+    }
+    // % 1/ sqr sqrt
+
+    // display record
+    displayRecord(recordArr);
+}
+
+function displayRecord(arr) {
+    recordEle.textContent = arr.join(' ');
 }
 
 function toggleDarkMode() {
@@ -125,6 +192,11 @@ function enableButtons() {
     const backspaceBtn = document.querySelector('#backspace');
     backspaceBtn.addEventListener('click', () => backspace());
 
+    const operatorBtns = document.querySelectorAll('.operator');
+    operatorBtns.forEach(btn => {
+        btn.addEventListener('click', () => operatorInput(btn.id));
+    })
+
     const numberBtns = document.querySelectorAll('.number');
     numberBtns.forEach(btn => {
         btn.addEventListener('click', () => numberInput(btn.textContent));
@@ -138,6 +210,7 @@ function enableButtons() {
 
 function load() {
     enableButtons();
+    resetVars();
 }
 
 load();
