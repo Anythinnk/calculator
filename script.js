@@ -1,3 +1,10 @@
+// to-do
+// consider case when dividing by 0 via divide button
+// disable operator buttons on division by 0 or rooting negative num
+// clean up operatorInput, spread into eval and others to make doing up equals function easier
+// equals function to add to history
+// clicking on history records brings over record to calculator
+// button to clear history
 const recordEle = document.querySelector('#record');
 const displayEle = document.querySelector('#display');
 const validKeys = [ '%',    'Delete',   'Escape',   'Backspace', 
@@ -20,12 +27,14 @@ const identifierSymbol = {
 
 let prevOper; // prev operator for calcs on currArr
 let currArr; // array for calcs
+let immStr; // string containing numbers with immediate calcs done on them e.g. 'sqr(9)' for 9 squared, needed as immediate calcs are not confirmed to be used until a calcOnNextFunc function is done
 let recordArr; // array of strings to join for display
 let displayIsResult;
 
 function resetVars() {
     prevOper = null;
     currArr = [];
+    immStr = null;
     recordArr = [];
     displayIsResult = false;
 }
@@ -36,6 +45,10 @@ function percent(a, b) {
 
 function clearEntry() {
     displayEle.textContent = '0';
+    if (immStr !== null) {
+        immStr = null;
+        displayRecord(recordArr);
+    }
 }
 
 function clearAll() {
@@ -103,12 +116,14 @@ function negative() {
 function numberInput(str) {
     if (displayIsResult) {
         clearEntry();
-        displayIsResult = !displayIsResult;
+        displayIsResult = false;
     }
     let currText = displayEle.textContent;
     if (currText === '0') {
         if (str !== '.') {
             currText = str;
+        } else {
+            currText += str;
         }
     } else if (!(currText[currText.length - 1] === '.' && str === '.')) {
         currText += str;
@@ -118,11 +133,11 @@ function numberInput(str) {
 
 function operatorInput(identifier) {
     let currText = displayEle.textContent;
-    // + - * /
+
     if (calcOnNextFuncs.includes(identifier)) {
-        if (!displayIsResult) {
+        if (!displayIsResult || immStr !== null) {
             currArr.push(Number(currText));
-            recordArr.push(Number(currText));
+            recordArr.push((immStr !== null) ? immStr : Number(currText));
             if (prevOper !== null) {
                 let result;
                 switch (prevOper) {
@@ -141,17 +156,44 @@ function operatorInput(identifier) {
                 currArr = [result];
                 displayEle.textContent = result;
             }
-            displayIsResult = !displayIsResult;
+            displayIsResult = true;
         } else {
             recordArr.pop();
         }
         prevOper = identifier;
+        immStr = null;
         recordArr.push(identifierSymbol[identifier]);
-    }
-    // % 1/ sqr sqrt
+        displayRecord(recordArr);
+    } else if (immediateFuncs.includes(identifier)) {
+        let result;
+        let num = Number(currText);
+        switch (identifier) {
+            case 'percent':
+                result = (currArr.length === 0) ? 0 : percent(currArr[0], num);
+                break;
+            case 'inverse':
+                result = inverse(num);
+                break;
+            case 'squared':
+                result = squared(num);
+                break;
+            case 'sqrt':
+                result = sqrt(num);
+        }
 
-    // display record
-    displayRecord(recordArr);
+        if (identifier === 'percent') {
+            immStr = result;
+        } else {
+            immStr = (immStr === null) ? `${identifierSymbol[identifier]}(${currText})`: `${identifierSymbol[identifier]}(${immStr})`;
+        }
+        
+        displayEle.textContent = result;
+        displayIsResult = true;
+
+        let tempArr = Array.from(recordArr);
+        tempArr.push(immStr);
+        displayRecord(tempArr);
+    }
 }
 
 function displayRecord(arr) {
