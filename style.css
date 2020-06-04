@@ -10,6 +10,7 @@
 
     --font-base-color: rgb(10, 10, 10);
     --font-faded-color: rgb(50, 50, 50);
+    --font-disabled-color: rgb(180, 180, 180);
 
     --button-spacing: 0.2rem;
     --button-color-num: rgb(250, 250, 250);
@@ -38,6 +39,7 @@
 
     --font-base-color: rgb(250, 250, 250);
     --font-faded-color: rgb(215, 215, 215);
+    --font-disabled-color: rgb(75, 75, 75);
 
     --button-spacing: 0.2rem;
     --button-color-num: rgb(10, 10, 10);
@@ -245,21 +247,26 @@ button.number,
     font-weight: bold;
 }
 
-button:hover,
-#negative:hover {
+button:disabled,
+#negative:disabled {
+    color: var(--font-disabled-color);
+}
+
+button:hover:not(:disabled),
+#negative:hover:not(:disabled) {
     background-color: var(--button-color-hover);
 }
 
-button:active,
-#negative:active {
+button:active:not(:disabled),
+#negative:active:not(:disabled) {
     background-color: var(--button-color-active);
 }
 
-button:focus {
+button:focus:not(:disabled) {
     outline-color: var(--font-base-color);
 }
 
-button:not(:focus-visible) {
+button:not(:focus-visible):not(:disabled) {
     outline: none;
 }
 
@@ -272,7 +279,7 @@ button:not(:focus-visible) {
     background-color: var(--button-color-bright-hover);
 }
 
-#equals:active{
+#equals:active {
     background-color: var(--button-color-bright-active);
 }
 

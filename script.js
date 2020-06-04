@@ -1,10 +1,10 @@
 // to-do
-// consider case when dividing by 0 via divide button
-// disable operator buttons on division by 0 or rooting negative num
 // clean up operatorInput, spread into eval and others to make doing up equals function easier
 // equals function to add to history
 // clicking on history records brings over record to calculator
 // button to clear history
+// resize font size dynamically
+const calcEle = document.querySelector('#calculator');
 const recordEle = document.querySelector('#record');
 const displayEle = document.querySelector('#display');
 const validKeys = [ '%',    'Delete',   'Escape',   'Backspace', 
@@ -44,6 +44,9 @@ function percent(a, b) {
 }
 
 function clearEntry() {
+    if (calcEle.classList.contains('only-numbers')) {
+        clearAll();
+    }
     displayEle.textContent = '0';
     if (immStr !== null) {
         immStr = null;
@@ -52,13 +55,18 @@ function clearEntry() {
 }
 
 function clearAll() {
+    if (calcEle.classList.contains('only-numbers')) { 
+        enableOperators();
+    }
     clearEntry();
     recordEle.textContent = '';
     resetVars();
 }
 
 function backspace() {
-    if (!displayIsResult) {
+    if (calcEle.classList.contains('only-numbers')) {
+        clearAll();
+    } else if (!displayIsResult) {
         let currText = displayEle.textContent;
         if (currText.length > 1) {
             displayEle.textContent = currText.substring(0, currText.length - 1);
@@ -69,11 +77,7 @@ function backspace() {
 }
 
 function inverse(a) {
-    if(a != 0) {
-        return 1/a;
-    } else {
-        return "Cannot divide by zero";
-    }
+    return divide(1, a);
 }
 
 function squared(a) {
@@ -84,12 +88,18 @@ function sqrt(a) {
     if (a >= 0) {
         return Math.sqrt(a);
     } else {
+        disableOperators();
         return "Invalid input";
     }
 }
 
 function divide(a, b) {
-    return a/b;
+    if (b != 0) {
+        return a/b;
+    } else {
+        disableOperators();
+        return "Cannot divide by zero";
+    }
 }
 
 function multiply(a, b) {
@@ -113,8 +123,16 @@ function negative() {
     }
 }
 
+function equals() {
+    if (calcEle.classList.contains('only-numbers')) {
+        clearAll();
+    }
+}
+
 function numberInput(str) {
-    if (displayIsResult) {
+    if (calcEle.classList.contains('only-numbers')) {
+        clearAll();
+    } else if (displayIsResult) {
         clearEntry();
         displayIsResult = false;
     }
@@ -212,7 +230,6 @@ function enableButtons() {
     const themeToggle = document.querySelector('#toggle-theme');
     themeToggle.addEventListener('click', () => toggleDarkMode());
 
-    const calcEle = document.querySelector('#calculator');
     const histBtn = document.querySelector('#history-btn');
     histBtn.addEventListener('click', () => {
         calcEle.classList.toggle('history');
@@ -220,7 +237,7 @@ function enableButtons() {
     
     const histCloseBtn = document.querySelector('#close-history-btn');
     histCloseBtn.addEventListener('click', () => {
-        if(calcEle.classList.contains('history')) {
+        if (calcEle.classList.contains('history')) {
             calcEle.classList.toggle('history');
         }
     })
@@ -248,6 +265,37 @@ function enableButtons() {
     negativeBtn.addEventListener('click', () => {
         displayEle.textContent = negative(displayEle.textContent);
     })
+
+    const equalsBtn = document.querySelector('#equals');
+    equalsBtn.addEventListener('click', () => equals());
+}
+
+function disableOperators() {
+    calcEle.classList.toggle('only-numbers');
+    const operatorBtns = document.querySelectorAll('.operator');
+    operatorBtns.forEach(btn => {
+        if (btn.id !== 'equals') {
+            btn.disabled = true;
+        }
+    });
+
+    const negativeBtn = document.querySelector('#negative');
+    negativeBtn.disabled = true;
+
+    const decimalBtn = document.querySelector('#decimal');
+    decimalBtn.disabled = true;
+}
+
+function enableOperators() {
+    calcEle.classList.toggle('only-numbers');
+    const operatorBtns = document.querySelectorAll('.operator');
+    operatorBtns.forEach(btn => btn.disabled = false);
+
+    const negativeBtn = document.querySelector('#negative');
+    negativeBtn.disabled = false;
+
+    const decimalBtn = document.querySelector('#decimal');
+    decimalBtn.disabled = false;
 }
 
 function load() {
