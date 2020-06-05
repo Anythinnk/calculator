@@ -1,5 +1,4 @@
 // to-do
-// clean up operatorInput, spread into eval and others to make doing up equals function easier
 // equals function to add to history
 // clicking on history records brings over record to calculator
 // button to clear history
@@ -14,7 +13,7 @@ const validKeys = [ '%',    'Delete',   'Escape',   'Backspace',
                     '1',    '2',        '3',        '+',
                     'F9',   '0',        '.',        '=', 'Enter']
 const immediateFuncs = ['percent', 'inverse', 'squared', 'sqrt'];
-const calcOnNextFuncs = ['divide', 'multiply', 'subtract', 'add'];
+const calcOnNextFuncs = ['divide', 'multiply', 'subtract', 'add', 'equals'];
 const identifierSymbol = {
     'divide': '\u00f7',
     'multiply': '\u00d7',
@@ -22,7 +21,8 @@ const identifierSymbol = {
     'add': '\u002b',
     'inverse': '1/',
     'squared': 'sqr',
-    'sqrt': '\u221a'
+    'sqrt': '\u221a',
+    'equals': '\u003d'
 }
 
 let prevOper; // prev operator for calcs on currArr
@@ -44,7 +44,7 @@ function percent(a, b) {
 }
 
 function clearEntry() {
-    if (calcEle.classList.contains('only-numbers')) {
+    if (calcEle.classList.contains('only-numbers') || prevOper === 'equals') {
         clearAll();
     }
     displayEle.textContent = '0';
@@ -58,9 +58,9 @@ function clearAll() {
     if (calcEle.classList.contains('only-numbers')) { 
         enableOperators();
     }
+    resetVars();
     clearEntry();
     recordEle.textContent = '';
-    resetVars();
 }
 
 function backspace() {
@@ -123,18 +123,16 @@ function negative() {
     }
 }
 
-function equals() {
-    if (calcEle.classList.contains('only-numbers')) {
-        clearAll();
-    }
-}
-
 function numberInput(str) {
     if (calcEle.classList.contains('only-numbers')) {
         clearAll();
     } else if (displayIsResult) {
-        clearEntry();
-        displayIsResult = false;
+        if (prevOper === 'equals') {
+            clearAll();
+        } else {
+            clearEntry();
+            displayIsResult = false;
+        }
     }
     let currText = displayEle.textContent;
     if (currText === '0') {
@@ -149,68 +147,88 @@ function numberInput(str) {
     displayEle.textContent = currText;
 }
 
+function evalPrevOper(newNum, operator) {
+    if (!displayIsResult || immStr !== null) {
+        currArr.push(newNum);
+        recordArr.push((immStr !== null) ? immStr : newNum);
+        if (prevOper !== null) {
+            let result;
+            switch (operator) {
+                case 'divide':
+                    result = divide(...currArr);
+                    break;
+                case 'multiply':
+                    result = multiply(...currArr);
+                    break;
+                case 'subtract':
+                    result = subtract(...currArr);
+                    break;
+                case 'add':
+                    result = add(...currArr);
+                    break;
+                case 'equals':
+                    result = newNum;
+            }
+            currArr = [result];
+            displayEle.textContent = result;
+        }
+        displayIsResult = true;
+    } else if (prevOper === 'equals') {
+        recordArr = [newNum];
+    } else {
+        recordArr.pop();
+    }
+}
+
+function evalImmOper(newNum, operator) {
+    let result;
+    switch (operator) {
+        case 'percent':
+            result = (currArr.length === 0) ? 0 : percent(currArr[0], newNum);
+            break;
+        case 'inverse':
+            result = inverse(newNum);
+            break;
+        case 'squared':
+            result = squared(newNum);
+            break;
+        case 'sqrt':
+            result = sqrt(newNum);
+    }
+
+    if (operator === 'percent') {
+        immStr = result;
+    } else {
+        immStr = (immStr === null) ? `${identifierSymbol[operator]}(${newNum})`: `${identifierSymbol[operator]}(${immStr})`;
+    }
+    
+    displayEle.textContent = result;
+    displayIsResult = true;
+}
+
 function operatorInput(identifier) {
     let currText = displayEle.textContent;
 
     if (calcOnNextFuncs.includes(identifier)) {
-        if (!displayIsResult || immStr !== null) {
-            currArr.push(Number(currText));
-            recordArr.push((immStr !== null) ? immStr : Number(currText));
-            if (prevOper !== null) {
-                let result;
-                switch (prevOper) {
-                    case 'divide':
-                        result = divide(...currArr);
-                        break;
-                    case 'multiply':
-                        result = multiply(...currArr);
-                        break;
-                    case 'subtract':
-                        result = subtract(...currArr);
-                        break;
-                    case 'add':
-                        result = add(...currArr);
-                }
-                currArr = [result];
-                displayEle.textContent = result;
-            }
-            displayIsResult = true;
+        if (identifier === 'equals' && calcEle.classList.contains('only-numbers')) {
+            clearAll();
         } else {
-            recordArr.pop();
+            evalPrevOper(Number(currText), prevOper);
+            prevOper = identifier;
+            immStr = null;
+            recordArr.push(identifierSymbol[identifier]);
+            displayRecord(recordArr);
         }
-        prevOper = identifier;
-        immStr = null;
-        recordArr.push(identifierSymbol[identifier]);
-        displayRecord(recordArr);
     } else if (immediateFuncs.includes(identifier)) {
-        let result;
-        let num = Number(currText);
-        switch (identifier) {
-            case 'percent':
-                result = (currArr.length === 0) ? 0 : percent(currArr[0], num);
-                break;
-            case 'inverse':
-                result = inverse(num);
-                break;
-            case 'squared':
-                result = squared(num);
-                break;
-            case 'sqrt':
-                result = sqrt(num);
-        }
-
-        if (identifier === 'percent') {
-            immStr = result;
+        evalImmOper(Number(currText), identifier);
+        if (prevOper === 'equals') {
+            displayRecord([immStr]);
+            recordArr = [];
         } else {
-            immStr = (immStr === null) ? `${identifierSymbol[identifier]}(${currText})`: `${identifierSymbol[identifier]}(${immStr})`;
+            let tempArr = Array.from(recordArr);
+            tempArr.push(immStr);
+            displayRecord(tempArr);
         }
-        
-        displayEle.textContent = result;
-        displayIsResult = true;
-
-        let tempArr = Array.from(recordArr);
-        tempArr.push(immStr);
-        displayRecord(tempArr);
     }
 }
 
@@ -265,9 +283,6 @@ function enableButtons() {
     negativeBtn.addEventListener('click', () => {
         displayEle.textContent = negative(displayEle.textContent);
     })
-
-    const equalsBtn = document.querySelector('#equals');
-    equalsBtn.addEventListener('click', () => equals());
 }
 
 function disableOperators() {
