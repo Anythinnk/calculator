@@ -235,6 +235,7 @@ function operatorInput(identifier) {
 }
 
 function addToHistory() {
+    const histCloseBtn = document.querySelector('#close-history-btn');
     const historyContainer = document.querySelector('#history-list');
     const noHistMsg = document.querySelector('#no-history-message');
     noHistMsg.style.display = 'none';
@@ -255,6 +256,9 @@ function addToHistory() {
     historyRecord.addEventListener('click', () => {
         displayHistRecord(historyRecord);
         prevOper = null;
+        if (histCloseBtn.style.display !== 'none') {
+            histCloseBtn.click();
+        }
     });
 
     historyContainer.prepend(historyRecord);
