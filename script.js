@@ -1,7 +1,7 @@
 // to-do
-// equals function to add to history
 // clicking on history records brings over record to calculator
 // button to clear history
+// display numbers correctly (account for floating pt error)
 // resize font size dynamically
 const calcEle = document.querySelector('#calculator');
 const recordEle = document.querySelector('#record');
@@ -218,6 +218,9 @@ function operatorInput(identifier) {
             immStr = null;
             recordArr.push(identifierSymbol[identifier]);
             displayRecord(recordArr);
+            if (identifier === 'equals' && isNumeric(displayEle.textContent)) {
+                addToHistory();
+            }
         }
     } else if (immediateFuncs.includes(identifier)) {
         evalImmOper(Number(currText), identifier);
@@ -232,8 +235,35 @@ function operatorInput(identifier) {
     }
 }
 
+function addToHistory() {
+    const historyContainer = document.querySelector('#history-list');
+    const noHistMsg = document.querySelector('#no-history-message');
+    noHistMsg.style.display = 'none';
+    
+    let historyRecord = document.createElement('div');
+    historyRecord.classList.add('history-record');
+
+    let recordEqn = document.createElement('span');
+    recordEqn.classList.add('equation');
+    recordEqn.textContent = recordEle.textContent;
+
+    let recordResult = document.createElement('span');
+    recordResult.classList.add('result');
+    recordResult.textContent = displayEle.textContent;
+
+    historyRecord.appendChild(recordEqn);
+    historyRecord.appendChild(recordResult);
+    historyContainer.prepend(historyRecord);
+    historyRecord.classList.add('faded');
+    requestAnimationFrame(() => historyRecord.classList.remove('faded'));
+}
+
 function displayRecord(arr) {
     recordEle.textContent = arr.join(' ');
+}
+
+function isNumeric(str) {
+    return !isNaN(str);
 }
 
 function toggleDarkMode() {

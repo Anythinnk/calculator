@@ -373,6 +373,12 @@ button:not(:focus-visible):not(:disabled) {
     flex-direction: column;
     justify-content: center;
     align-items: flex-end;
+    opacity: 1;
+    transition: opacity 1.2s;
+}
+
+.history-record.faded {
+    opacity: 0;
 }
 
 .history-record:hover {
