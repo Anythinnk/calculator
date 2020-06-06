@@ -1,5 +1,4 @@
 // to-do
-// clicking on history records brings over record to calculator
 // button to clear history
 // display numbers correctly (account for floating pt error)
 // resize font size dynamically
@@ -253,13 +252,32 @@ function addToHistory() {
 
     historyRecord.appendChild(recordEqn);
     historyRecord.appendChild(recordResult);
+    historyRecord.addEventListener('click', () => {
+        displayHistRecord(historyRecord);
+        prevOper = null;
+    });
+
     historyContainer.prepend(historyRecord);
     historyRecord.classList.add('faded');
     requestAnimationFrame(() => historyRecord.classList.remove('faded'));
 }
 
+function displayHistRecord(record) {
+    let equation = record.querySelector('.equation').textContent;
+    recordEle.textContent = equation;
+    recordArr = getEquationAsArr(equation);
+
+    let result = Number(record.querySelector('.result').textContent);
+    displayEle.textContent = result;
+    currArr = [result];
+}
+
 function displayRecord(arr) {
     recordEle.textContent = arr.join(' ');
+}
+
+function getEquationAsArr(str) {
+    return str.split(' ');
 }
 
 function isNumeric(str) {
