@@ -1,5 +1,4 @@
 // to-do
-// button to clear history
 // display numbers correctly (account for floating pt error)
 // resize font size dynamically
 const calcEle = document.querySelector('#calculator');
@@ -261,6 +260,9 @@ function addToHistory() {
         }
     });
 
+    const delHistBtn = document.querySelector('#del-history-btn');
+    delHistBtn.style.display = 'initial';
+
     historyContainer.prepend(historyRecord);
     historyRecord.classList.add('faded');
     requestAnimationFrame(() => historyRecord.classList.remove('faded'));
@@ -274,6 +276,19 @@ function displayHistRecord(record) {
     let result = Number(record.querySelector('.result').textContent);
     displayEle.textContent = result;
     currArr = [result];
+}
+
+function deleteHistory() {
+    const historyContainer = document.querySelector('#history-list');
+    const noHistMsg = document.querySelector('#no-history-message');
+    noHistMsg.style.display = 'initial';
+
+    while (historyContainer.firstChild) {
+        historyContainer.removeChild(historyContainer.lastChild);
+    }
+
+    const delHistBtn = document.querySelector('#del-history-btn');
+    delHistBtn.style.display = 'none';
 }
 
 function displayRecord(arr) {
@@ -311,6 +326,9 @@ function enableButtons() {
             calcEle.classList.toggle('history');
         }
     })
+
+    const delHistBtn = document.querySelector('#del-history-btn');
+    delHistBtn.addEventListener('click', () => deleteHistory());
 
     const clearAllBtn = document.querySelector('#clear-all');
     clearAllBtn.addEventListener('click', () => clearAll());

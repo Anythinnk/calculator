@@ -356,11 +356,28 @@ button:not(:focus-visible):not(:disabled) {
     padding: 0;
 }
 
-#close-history-btn:hover {
+#del-history-btn {
+    display: none;
+    background-color: transparent;
+    align-self: flex-end;
+    margin-top: auto;
+    margin-right: var(--button-spacing);
+    margin-bottom: calc(var(--button-spacing)*-0.5);
+    padding: 0;
+}
+
+#del-history-btn span {
+    font-size: 1.75rem;
+    margin-top: var(--button-spacing);
+}
+
+#close-history-btn:hover,
+#del-history-btn:hover {
     color: var(--button-color-bright-hover);
 }
 
-#close-history-btn:active {
+#close-history-btn:active,
+#del-history-btn:active {
     color: var(--button-color-bright-active);
 }
 
