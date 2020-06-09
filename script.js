@@ -4,12 +4,6 @@
 const calcEle = document.querySelector('#calculator');
 const recordEle = document.querySelector('#record');
 const displayEle = document.querySelector('#display');
-const validKeys = [ '%',    'Delete',   'Escape',   'Backspace', 
-                    'r',    'q',        '@',        '/',
-                    '7',    '8',        '9',        '*',
-                    '4',    '5',        '6',        '-',
-                    '1',    '2',        '3',        '+',
-                    'F9',   '0',        '.',        '=', 'Enter']
 const immediateFuncs = ['percent', 'inverse', 'squared', 'sqrt'];
 const calcOnNextFuncs = ['divide', 'multiply', 'subtract', 'add', 'equals'];
 const identifierSymbol = {
@@ -21,6 +15,33 @@ const identifierSymbol = {
     'squared': 'sqr',
     'sqrt': '\u221a',
     'equals': '\u003d'
+}
+const validKeysToID = {
+    '%': 'percent',
+    'Delete': 'clear-entry',
+    'Escape': 'clear-all',
+    'Backspace': 'backspace', 
+    'r': 'inverse',
+    'q': 'squared',
+    '@': 'sqrt',
+    '/': 'divide',
+    '*': 'multiply',
+    '-': 'subtract',
+    '+': 'add',
+    '0': '0',
+    '1': '1',
+    '2': '2',
+    '3': '3',
+    '4': '4',
+    '5': '5',
+    '6': '6',
+    '7': '7',
+    '8': '8',
+    '9': '9',
+    'F9': 'negative',
+    '.': 'decimal',
+    '=': 'equals',
+    'Enter': 'equals'
 }
 
 let prevOper; // prev operator for calcs on currArr
@@ -233,6 +254,13 @@ function operatorInput(identifier) {
     }
 }
 
+function buttonInput(e) {
+    let activeKey = calcEle.querySelector(`#calculator > button[id='${validKeysToID[e.key]}']`);
+    if (activeKey) {
+        activeKey.click();
+    }
+}
+
 function addToHistory() {
     const histCloseBtn = document.querySelector('#close-history-btn');
     const historyContainer = document.querySelector('#history-list');
@@ -355,6 +383,10 @@ function enableButtons() {
     })
 }
 
+function enableKeyPress() {
+    window.addEventListener('keydown', (e) => buttonInput(e))
+}
+
 function disableOperators() {
     calcEle.classList.toggle('only-numbers');
     const operatorBtns = document.querySelectorAll('.operator');
@@ -385,6 +417,7 @@ function enableOperators() {
 
 function load() {
     enableButtons();
+    enableKeyPress();
     resetVars();
 }
 
