@@ -104,21 +104,11 @@ function squared(a) {
 }
 
 function sqrt(a) {
-    if (a >= 0) {
-        return Math.sqrt(a);
-    } else {
-        disableOperators();
-        return "Invalid input";
-    }
+    return (a >= 0) ? Math.sqrt(a) : "Invalid input";
 }
 
 function divide(a, b) {
-    if (b != 0) {
-        return a/b;
-    } else {
-        disableOperators();
-        return "Cannot divide by zero";
-    }
+    return (b != 0) ? a/b : "Cannot divide by zero";
 }
 
 function multiply(a, b) {
@@ -189,7 +179,7 @@ function evalPrevOper(newNum, operator) {
                     result = newNum;
             }
             currArr = [result];
-            displayEle.textContent = result;
+            displayEle.textContent = round(checkValidity(result));
         }
         displayIsResult = true;
     } else if (prevOper === 'equals') {
@@ -221,7 +211,7 @@ function evalImmOper(newNum, operator) {
         immStr = (immStr === null) ? `${identifierSymbol[operator]}(${newNum})`: `${identifierSymbol[operator]}(${immStr})`;
     }
     
-    displayEle.textContent = result;
+    displayEle.textContent = round(checkValidity(result));
     displayIsResult = true;
 }
 
@@ -252,6 +242,14 @@ function operatorInput(identifier) {
             displayRecord(tempArr);
         }
     }
+}
+
+function checkValidity(result) {
+    result = (result === Infinity) ? 'Overflow' : result;
+    if (isNaN(result)) {
+        disableOperators();
+    }
+    return result;
 }
 
 function buttonInput(e) {
@@ -329,6 +327,10 @@ function getEquationAsArr(str) {
 
 function isNumeric(str) {
     return !isNaN(str);
+}
+
+function round(num) {
+    return (!isNaN(num)) ? Math.round(num*100000000)/100000000 : num;
 }
 
 function toggleDarkMode() {
