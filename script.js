@@ -87,7 +87,9 @@ function backspace() {
         clearAll();
     } else if (!displayIsResult) {
         let currText = displayEle.textContent;
-        if (currText.length > 1) {
+        if (currText.length === 2 && currText[0] === '-') {
+            displayEle.textContent = '0';
+        } else if (currText.length > 1) {
             displayEle.textContent = currText.substring(0, currText.length - 1);
         } else {
             displayEle.textContent = '0';
