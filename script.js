@@ -1,5 +1,4 @@
 // to-do
-// display numbers correctly (account for floating pt error)
 // resize font size dynamically
 const calcEle = document.querySelector('#calculator');
 const recordEle = document.querySelector('#record');
@@ -49,107 +48,27 @@ let prevOper = null,
     tempLastInput = false,
     calcArr = [], // array for calcs
     recordArr = [], // array to join for record display, numbers rounded to specific dp
-    prevCalcResult = null, // unrounded
     dispCalcResult = null, // unrounded, will be rounded when converted to textContent
     displayIsResult = false;
-
-// immediate operators operate on the display number if NOT displayIsResult OR if displayIsResult but last element of recordArr is a delayed operator, and on the last value of calcArr if displayIsResult but last element is not a delayed operator
-
-// once a delayed operator is pressed, any prev delayed operator is evaluated and any immediate operator is operated on the shown result
-// once a number is pressed, any immediate operator is operated on the shown number
-// once an immediate operator is pressed, it is operated on the last number
-// for records that end with equals (i.e. frm history), any immediate operator is operated on the last number
-
-// DRAFT PROCESS
-// so basically, on pressing any number
-    // number input (old code should work, but need to edit negative to work in the same way as an immediate operator (takes in a number and returns another)
-    // if displayIsResult
-        // if tempLastInput (history or imm oper), clearEntry and clearLastInput
-        // else (equals button or delayed oper), clearAll if equals, clearEntry O.W.
-
-// on pressing any delayed operator, 
-    // if NOT displayIsResult (number input)
-        // append display number to calcArr
-        // if more than 2 numbers, replace first 2 with dispCalcResult
-        // if dispCalcResult is not null, update prevCalcResult with dispCalcResult
-        // calculate if calcArr is not empty (return only elem of calcArr if <2 elems)
-        // update dispCalcResult, display it
-        // displayIsResult becomes true
-    // else if displayIsResult
-        // if last element of recordArr is a delayed operator or equals
-            // pop the last element of recordArr
-        // if not 
-            // (appending done by the first press of immediate operator)
-            // if dispCalcResult is not null, update prevCalcResult with dispCalcResult
-            // calculate if calcArr is not empty (return only elem of calcArr if <2 elems)
-            // update dispCalcResult, display it
-    // update prevOper with the delayed operator
-    // tempLastInput becomes false
-    // update recordArr
-
-// on pressing any immediate operator
-    // if NOT displayIsResult OR if displayIsResult AND last element of recordArr is a delayed operator (number pressed or delayed operator pressed)
-        // if NOT displayIsResult AND operator is "negative"
-            // do negative function on display number
-            // return
-        // append (display number if NOT displayIsResult, dispCalcResult O.W) to calcArr
-        // if more than 2 numbers, replace first 2 with dispCalcResult
-        // update recordArr using last elem of calcArr (except percent)
-    // else if displayIsResult AND last element of recordArr is NOT a delayed operator (equals or prev imm operator)
-        // if last elem of recordArr is "="
-            // pop the last elem of recordArr
-        // update recordArr using last elem of recordArr (except percent)
-    // displayIsResult becomes true
-    // tempLastInput becomes true
-    // calculate on the last element (both for percent, 0 as a if only 1 element) of calcArr and replace the element after calc
-    // if percent was done, update recordArr using last elem of calcArr as well
-
-// equals button
-    // if NOT displayIsResult OR if displayIsResult AND last element of recordArr is a delayed operator (number pressed or delayed operator pressed)
-        // append (display number if NOT displayIsResult, dispCalcResult O.W) to calcArr
-        // if more than 2 numbers, replace first 2 with dispCalcResult
-        // if dispCalcResult is not null, update prevCalcResult with dispCalcResult
-        // calculate if calcArr is not empty (return only elem of calcArr if <2 elems)
-        // update dispCalcResult, display it
-        // displayIsResult becomes true
-    // else if displayIsResult
-        // if last element of recordArr is equals (from history or repeating equals)
-            // pop the last elem of recordArr
-            // if dispCalcResult is not null
-                // update prevCalcResult with dispCalcResult
-                // calcArr = [dispCalcResult, last elem of calcArr]
-                // recordArr = [dispCalcResult, last 2 elem of recordArr]
-            // calculate if calcArr is not empty (return only elem of calcArr if <2 elems)
-            // update dispCalcResult, display it
-        // if not 
-            // (appending done by the first press of immediate operator)
-            // if dispCalcResult is not null, update prevCalcResult with dispCalcResult
-            // calculate if calcArr is not empty (return only elem of calcArr if <2 elems)
-            // update dispCalcResult, display it
-    // update recordArr
-    // tempLastInput becomes false
-    // save prevOper, prevCalcResult, dispCalcResult to html dataset
-    // save record textContent and display textContent to history displays
 
 function resetVars() {
     prevOper = null;
     tempLastInput = false;
     calcArr = [];
     recordArr = [];
-    prevCalcResult = null;
     dispCalcResult = null;
     displayIsResult = false;
 }
 
 function logVars() {
-    let tempObj = {prevOper, tempLastInput, calcArr, recordArr, prevCalcResult, dispCalcResult, displayIsResult};
+    let tempObj = {prevOper, tempLastInput, calcArr, recordArr, dispCalcResult, displayIsResult};
     console.log(tempObj);
 }
 
 function clearEntry() {
     if (calcEle.classList.contains('only-numbers')) {
         clearAll();
-    } else if (tempLastInput) {
+    } else if (tempLastInput && displayIsResult) {
         clearLastInput();
     } else if (lastElemOf(recordArr) === identifierSymbol['equals']) {
         clearAll();
@@ -281,8 +200,7 @@ function evalPrevOper(newNum, operator) {
     if (!displayIsResult) {
         recordArr.push(round(newNum));
         calcArr.push(newNum);
-        calcArr = (calcArr.length > 2) ? [dispCalcResult, lastElemOf(calcArr)] : calcArr;
-        prevCalcResult = (isNumeric(dispCalcResult)) ? dispCalcResult : null;        
+        calcArr = (calcArr.length > 2) ? [dispCalcResult, lastElemOf(calcArr)] : calcArr;    
         dispCalcResult = prevOperResult(operator);
         displayEle.textContent = round(checkValidity(dispCalcResult));
         displayIsResult = true;
@@ -290,7 +208,6 @@ function evalPrevOper(newNum, operator) {
         if ([...calcOnNextFuncs.map((identifier) => identifierSymbol[identifier]), identifierSymbol['equals']].includes(lastElemOf(recordArr))) {
             recordArr.pop();
         } else {
-            prevCalcResult = (isNumeric(dispCalcResult)) ? dispCalcResult : null;
             dispCalcResult = prevOperResult(operator);
             displayEle.textContent = round(checkValidity(dispCalcResult));
         }
@@ -356,7 +273,6 @@ function evalEquals(newNum, operator) {
             recordArr = [round(dispCalcResult), recordArr[recordArr.length-2], lastElemOf(recordArr)];
         }
     }
-    prevCalcResult = (isNumeric(dispCalcResult)) ? dispCalcResult : null;
     dispCalcResult = prevOperResult(operator);
     displayEle.textContent = round(checkValidity(dispCalcResult));
     displayIsResult = true;
@@ -373,15 +289,92 @@ function operatorInput(identifier) {
         evalImmOper(currNum, identifier);
         tempLastInput = true;
     } else if (identifier === 'equals') {
+        if (calcEle.classList.contains('only-numbers')) {
+            clearAll();
+            return;
+        }
         evalEquals(currNum, prevOper);
         tempLastInput = false;
         recordArr.push(identifierSymbol[identifier]);
     }
     displayRecord(recordArr);
+    if (!isNaN(displayEle.textContent) && identifier === 'equals') {
+        addToHistory();
+    }
     logVars();
 }
 
-// history funcs
+function addToHistory() {
+    const histCloseBtn = document.querySelector('#close-history-btn');
+    const historyContainer = document.querySelector('#history-list');
+    const noHistMsg = document.querySelector('#no-history-message');
+    noHistMsg.style.display = 'none';
+
+    let historyRecord = document.createElement('div');
+    historyRecord.classList.add('history-record');
+
+    let recordEqn = document.createElement('span');
+    recordEqn.classList.add('equation');
+    recordEqn.textContent = recordEle.textContent;
+
+    let recordResult = document.createElement('span');
+    recordResult.classList.add('result');
+    recordResult.textContent = displayEle.textContent;
+
+    historyRecord.appendChild(recordEqn);
+    historyRecord.appendChild(recordResult);
+    saveVarsTo(historyRecord);
+    historyRecord.addEventListener('click', () => {
+        loadVarsFrom(historyRecord);
+        displayHistRecord(historyRecord);
+        if (histCloseBtn.style.display !== 'none') {
+            histCloseBtn.click();
+        }
+    })
+
+    const delHistBtn = document.querySelector('#del-history-btn');
+    delHistBtn.style.display = 'initial';
+
+    historyContainer.prepend(historyRecord);
+    historyRecord.classList.add('faded');
+    requestAnimationFrame(() => historyRecord.classList.remove('faded'));
+}
+
+function displayHistRecord(record) {
+    let equation = record.querySelector('.equation').textContent;
+    recordEle.textContent = equation;
+    recordArr = getStrAsArr(equation, ' ');
+    tempLastInput = true;
+
+    let result = Number(record.querySelector('.result').textContent);
+    displayEle.textContent = result;
+    displayIsResult = true;
+}
+
+function saveVarsTo(record) {
+    record.dataset.oper = prevOper;
+    record.dataset.calcarr = calcArr.join(',');
+    record.dataset.dispresult = dispCalcResult;
+}
+
+function loadVarsFrom(record) {
+    prevOper = (record.dataset.oper === 'null') ? null : record.dataset.oper;
+    calcArr = getStrAsArr(record.dataset.calcarr, ',');
+    dispCalcResult = Number(record.dataset.dispresult);
+}
+
+function deleteHistory() {
+    const historyContainer = document.querySelector('#history-list');
+    const noHistMsg = document.querySelector('#no-history-message');
+    noHistMsg.style.display = 'initial';
+
+    while (historyContainer.firstChild) {
+        historyContainer.removeChild(historyContainer.lastChild);
+    }
+
+    const delHistBtn = document.querySelector('#del-history-btn');
+    delHistBtn.style.display = 'none';
+}
 
 function checkValidity(result) {
     result = (result === Infinity || result === -Infinity) ? 'Overflow' : result;
@@ -410,8 +403,10 @@ function displayRecord(arr) {
     recordEle.textContent = arr.join(' ');
 }
 
-function getEquationAsArr(str) {
-    return str.split(' ');
+function getStrAsArr(str, sep) {
+    let temp = str.split(sep);
+    temp = temp.map((elem) => elem = !isNaN(elem) ? Number(elem) : elem);
+    return temp;
 }
 
 function round(num) {
