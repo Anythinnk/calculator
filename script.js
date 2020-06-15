@@ -43,6 +43,7 @@ const validKeysToID = {
     '=': 'equals',
     'Enter': 'equals'
 }
+const numDecimals = 16;
 
 let prevOper = null,
     tempLastInput = false,
@@ -198,7 +199,7 @@ function prevOperResult(operator) {
 
 function evalPrevOper(newNum, operator) {
     if (!displayIsResult) {
-        recordArr.push(round(newNum));
+        recordArr.push(round(newNum, numDecimals+1));
         calcArr.push(newNum);
         calcArr = (calcArr.length > 2) ? [dispCalcResult, lastElemOf(calcArr)] : calcArr;    
         dispCalcResult = prevOperResult(operator);
@@ -242,7 +243,7 @@ function evalImmOper(newNum, operator) {
             displayEle.textContent = negative(newNum);
             return;
         }
-        recordArr.push(round(newNum));
+        recordArr.push(round(newNum, numDecimals+1));
         calcArr.push(newNum);
         calcArr = (calcArr.length > 2) ? [dispCalcResult, lastElemOf(calcArr)] : calcArr;
     } else if (lastElemOf(recordArr) === identifierSymbol['equals']) {
@@ -256,21 +257,21 @@ function evalImmOper(newNum, operator) {
     displayIsResult = true;
 
     let tempRecord;
-    tempRecord = (operator === 'percent') ? round(tempResult) : `${identifierSymbol[operator]}(${lastElemOf(recordArr)})`;
+    tempRecord = (operator === 'percent') ? round(tempResult, numDecimals+1) : `${identifierSymbol[operator]}(${lastElemOf(recordArr)})`;
     recordArr.pop();
     recordArr.push(tempRecord);
 }
 
 function evalEquals(newNum, operator) {
     if (!displayIsResult || displayIsResult && calcOnNextFuncs.map((identifier) => identifierSymbol[identifier]).includes(lastElemOf(recordArr))) {
-        recordArr.push(round(newNum));
+        recordArr.push(round(newNum, numDecimals+1));
         calcArr.push(newNum);
         calcArr = (calcArr.length > 2) ? [dispCalcResult, lastElemOf(calcArr)] : calcArr;
     } else if (lastElemOf(recordArr) === identifierSymbol['equals']) {
         recordArr.pop();
         if (isNumeric(dispCalcResult) && calcArr.length > 1) {
             calcArr = [dispCalcResult, lastElemOf(calcArr)];
-            recordArr = [round(dispCalcResult), recordArr[recordArr.length-2], lastElemOf(recordArr)];
+            recordArr = [round(dispCalcResult, numDecimals+1), recordArr[recordArr.length-2], lastElemOf(recordArr)];
         }
     }
     dispCalcResult = prevOperResult(operator);
@@ -301,7 +302,6 @@ function operatorInput(identifier) {
     if (!isNaN(displayEle.textContent) && identifier === 'equals') {
         addToHistory();
     }
-    logVars();
 }
 
 function addToHistory() {
@@ -409,8 +409,9 @@ function getStrAsArr(str, sep) {
     return temp;
 }
 
-function round(num) {
-    return (!isNaN(num)) ? Math.round(num*100000000)/100000000 : num;
+function round(num, dp = numDecimals) {
+    let temp = Number("1"+"0".repeat(dp))
+    return (!isNaN(num)) ? Math.round(num*temp)/temp : num;
 }
 
 function toggleDarkMode() {
