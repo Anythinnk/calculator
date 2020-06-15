@@ -151,6 +151,8 @@ function clearEntry() {
         clearAll();
     } else if (tempLastInput) {
         clearLastInput();
+    } else if (lastElemOf(recordArr) === identifierSymbol['equals']) {
+        clearAll();
     }
     displayEle.textContent = '0';
     displayIsResult = false;
@@ -280,7 +282,7 @@ function evalPrevOper(newNum, operator) {
         recordArr.push(round(newNum));
         calcArr.push(newNum);
         calcArr = (calcArr.length > 2) ? [dispCalcResult, lastElemOf(calcArr)] : calcArr;
-        prevCalcResult = (dispCalcResult) ? dispCalcResult : null;        
+        prevCalcResult = (isNumeric(dispCalcResult)) ? dispCalcResult : null;        
         dispCalcResult = prevOperResult(operator);
         displayEle.textContent = round(checkValidity(dispCalcResult));
         displayIsResult = true;
@@ -288,7 +290,7 @@ function evalPrevOper(newNum, operator) {
         if ([...calcOnNextFuncs.map((identifier) => identifierSymbol[identifier]), identifierSymbol['equals']].includes(lastElemOf(recordArr))) {
             recordArr.pop();
         } else {
-            prevCalcResult = (dispCalcResult) ? dispCalcResult : null;
+            prevCalcResult = (isNumeric(dispCalcResult)) ? dispCalcResult : null;
             dispCalcResult = prevOperResult(operator);
             displayEle.textContent = round(checkValidity(dispCalcResult));
         }
@@ -342,6 +344,24 @@ function evalImmOper(newNum, operator) {
     recordArr.push(tempRecord);
 }
 
+function evalEquals(newNum, operator) {
+    if (!displayIsResult || displayIsResult && calcOnNextFuncs.map((identifier) => identifierSymbol[identifier]).includes(lastElemOf(recordArr))) {
+        recordArr.push(round(newNum));
+        calcArr.push(newNum);
+        calcArr = (calcArr.length > 2) ? [dispCalcResult, lastElemOf(calcArr)] : calcArr;
+    } else if (lastElemOf(recordArr) === identifierSymbol['equals']) {
+        recordArr.pop();
+        if (isNumeric(dispCalcResult) && calcArr.length > 1) {
+            calcArr = [dispCalcResult, lastElemOf(calcArr)];
+            recordArr = [round(dispCalcResult), recordArr[recordArr.length-2], lastElemOf(recordArr)];
+        }
+    }
+    prevCalcResult = (isNumeric(dispCalcResult)) ? dispCalcResult : null;
+    dispCalcResult = prevOperResult(operator);
+    displayEle.textContent = round(checkValidity(dispCalcResult));
+    displayIsResult = true;
+}
+
 function operatorInput(identifier) {
     let currNum = (displayIsResult) ? dispCalcResult : Number(displayEle.textContent);
     if (calcOnNextFuncs.includes(identifier)) {
@@ -352,20 +372,27 @@ function operatorInput(identifier) {
     } else if (immediateFuncs.includes(identifier)) {
         evalImmOper(currNum, identifier);
         tempLastInput = true;
+    } else if (identifier === 'equals') {
+        evalEquals(currNum, prevOper);
+        tempLastInput = false;
+        recordArr.push(identifierSymbol[identifier]);
     }
     displayRecord(recordArr);
     logVars();
 }
 
-// equals func
 // history funcs
 
 function checkValidity(result) {
     result = (result === Infinity || result === -Infinity) ? 'Overflow' : result;
-    if (isNaN(result)) {
+    if (!isNumeric(result)) {
         disableOperators();
     }
     return result;
+}
+
+function isNumeric(a) {
+    return Number.isFinite(a);
 }
 
 function buttonInput(e) {
@@ -385,10 +412,6 @@ function displayRecord(arr) {
 
 function getEquationAsArr(str) {
     return str.split(' ');
-}
-
-function isNumeric(str) {
-    return !isNaN(str);
 }
 
 function round(num) {
