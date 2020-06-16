@@ -1,5 +1,5 @@
 // to-do
-// resize font size dynamically
+// limit number of numbers that can be inputted, and add buttons to scroll recordEle
 const calcEle = document.querySelector('#calculator');
 const recordEle = document.querySelector('#record');
 const displayEle = document.querySelector('#display');
@@ -43,7 +43,10 @@ const validKeysToID = {
     '=': 'equals',
     'Enter': 'equals'
 }
-const numDecimals = 16;
+const defaultDispFontSize = `${pxToRem(window.getComputedStyle(displayEle).fontSize)}rem`;
+const defaultRecFontSize = `${pxToRem(window.getComputedStyle(recordEle).fontSize)}rem`;
+
+const numDecimals = 15;
 
 let prevOper = null,
     tempLastInput = false,
@@ -169,7 +172,7 @@ function numberInput(str) {
         } else {
             currText += str;
         }
-    } else if (!(currText[currText.length - 1] === '.' && str === '.')) {
+    } else if (!(currText.includes('.') && str === '.')) {
         currText += str;
     }
     displayEle.textContent = currText;
@@ -327,6 +330,9 @@ function addToHistory() {
     historyRecord.addEventListener('click', () => {
         loadVarsFrom(historyRecord);
         displayHistRecord(historyRecord);
+        resetFontSizes();
+        fitFont(displayEle);
+        fitFont(recordEle);
         if (histCloseBtn.style.display !== 'none') {
             histCloseBtn.click();
         }
@@ -457,7 +463,19 @@ function enableButtons() {
 
     const numberBtns = document.querySelectorAll('.number');
     numberBtns.forEach(btn => {
-        btn.addEventListener('click', () => numberInput(btn.textContent));
+        btn.addEventListener('click', () => {
+            numberInput(btn.textContent);
+            fitFont(displayEle);
+        })
+    })
+
+    const mainBtns = document.querySelectorAll('.operator, .display-edit');
+    mainBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            resetFontSizes();
+            fitFont(displayEle);
+            fitFont(recordEle);
+        })
     })
 }
 
@@ -487,9 +505,63 @@ function enableOperators() {
     decimalBtn.disabled = false;
 }
 
+function resetFontSizes() {
+    displayEle.style.fontSize = defaultDispFontSize;
+    recordEle.style.fontSize = defaultRecFontSize;
+}
+
+function fitFont(elem) {    // assumes elem is a p element within a container
+    let isFlexEnd;
+    if (window.getComputedStyle(elem).alignSelf === 'flex-end') {
+        elem.style.alignSelf = 'flex-start';
+        isFlexEnd = true;
+    }
+
+    let currFontSize = pxToRem(window.getComputedStyle(elem).fontSize);
+    let heightReq = elem.parentElement.scrollHeight;
+    let heightNow = elem.parentElement.clientHeight;
+    let widthReq = elem.parentElement.scrollWidth;
+    let widthNow = elem.parentElement.clientWidth;
+    while (heightReq > heightNow || widthReq > widthNow) {
+        widthNow = elem.parentElement.clientWidth;
+        heightNow = elem.parentElement.clientHeight;
+        currFontSize -= 0.1;
+        currFontSize = round(currFontSize, 1);
+        elem.style.fontSize = `${currFontSize}rem`;
+        heightReq = elem.parentElement.scrollHeight;
+        widthReq = elem.parentElement.scrollWidth;
+        if (currFontSize <= 0) {
+            break;
+        }
+    }
+    
+    if (isFlexEnd) {
+        elem.style.alignSelf = 'flex-end';
+    }
+}
+
+function pxToRem(str) {
+    const rootSize = window.getComputedStyle(document.body).fontSize;
+
+    let pxNum = Number(str.slice(0, -2));
+    let rootNum = Number(rootSize.slice(0, -2));
+    return pxNum/rootNum;
+}
+
+function enableResizeEvents() {
+    fitFont(displayEle);
+    fitFont(recordEle);
+    window.addEventListener('resize', () => {
+        resetFontSizes();
+        fitFont(displayEle);
+        fitFont(recordEle);
+    });
+}
+
 function load() {
     enableButtons();
     enableKeyPress();
+    enableResizeEvents();
     resetVars();
 }
 

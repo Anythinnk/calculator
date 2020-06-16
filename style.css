@@ -146,7 +146,7 @@ body {
 
 #calculator {
     display: grid;
-    grid-template-rows: 0.4fr 0.5fr 1.3fr repeat(6, 1.1fr);
+    grid-template-rows: 0.5fr 0.5fr 1.2fr repeat(6, 1.1fr);
     grid-template-columns: repeat(4, 1fr);
     grid-template-areas:    ".          .               .           history-btn"
                             "record     record          record      record"
@@ -198,24 +198,39 @@ body {
     color: var(--font-base-color);
 }
 
-#record {
+#record-container {
     grid-area: record;
+    min-height: 1rem;
     border: none;
-    padding: 0 0.8rem;
+    margin: 0 0.8rem;
     display: flex;
     justify-content: flex-end;
-    align-items: flex-end;
+    overflow-x: hidden;
 }
 
-#display {
+#record {
+    align-self: flex-end;
+    padding: 0;
+    margin: 0;
+    font-size: 1.2rem;
+    white-space: nowrap;
+}
+
+#display-container {
     grid-area: display;
     min-height: 2rem;
     border: none;
-    padding: 0 0.8rem;
+    margin: 0 0.8rem;
     display: flex;
     justify-content: flex-end;
-    align-items: flex-start;
-    font-size: 2rem;
+}
+
+#display {
+    align-self: flex-start;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    font-size: 3rem;
 }
 
 button {
@@ -533,7 +548,7 @@ button:not(:focus-visible):not(:disabled) {
 
 @media only screen and (min-aspect-ratio: 6/5) {
     #calculator {
-        grid-template-rows: 0.5fr 1.3fr repeat(6, 1.1fr);
+        grid-template-rows: 0.55fr 1.25fr repeat(6, 1.1fr);
         grid-template-columns: repeat(4, 1fr) 2fr;
         grid-template-areas:    "record     record          record      record      history"
                                 "display    display         display     display     history"
