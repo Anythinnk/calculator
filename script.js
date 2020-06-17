@@ -1,5 +1,5 @@
 // to-do
-// limit number of numbers that can be inputted, and add buttons to scroll recordEle
+// add buttons to scroll recordEle
 const calcEle = document.querySelector('#calculator');
 const recordEle = document.querySelector('#record');
 const displayEle = document.querySelector('#display');
@@ -47,6 +47,7 @@ const defaultDispFontSize = `${pxToRem(window.getComputedStyle(displayEle).fontS
 const defaultRecFontSize = `${pxToRem(window.getComputedStyle(recordEle).fontSize)}rem`;
 
 const numDecimals = 15;
+const dispInputLimit = 16;
 
 let prevOper = null,
     tempLastInput = false,
@@ -166,6 +167,9 @@ function numberInput(str) {
         }
     }
     let currText = displayEle.textContent;
+    if (!displayIsResult && strLenAtLimit(currText, dispInputLimit)) {
+        return;
+    }
     if (currText === '0') {
         if (str !== '.') {
             currText = str;
@@ -508,6 +512,11 @@ function enableOperators() {
 function resetFontSizes() {
     displayEle.style.fontSize = defaultDispFontSize;
     recordEle.style.fontSize = defaultRecFontSize;
+}
+
+function strLenAtLimit(str, limit) {
+    let onlyLetters = str.replace('.','');
+    return onlyLetters.length >= limit;
 }
 
 function fitFont(elem) {    // assumes elem is a p element within a container
