@@ -202,7 +202,7 @@ body {
     grid-area: record;
     min-height: 1rem;
     border: none;
-    margin: 0 0.8rem;
+    margin: 0 1rem;
     display: flex;
     justify-content: flex-end;
     overflow-x: hidden;
@@ -214,6 +214,26 @@ body {
     margin: 0;
     font-size: 1.2rem;
     white-space: nowrap;
+}
+
+#record-btn-container {
+    grid-area: 2/1/3/5;
+    min-height: 1rem;
+    padding: 0 0.1rem;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+}
+
+#rec-left-btn,
+#rec-right-btn {
+    padding: 0;
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--button-color-bright);
+    background-color: transparent;
+    align-self: flex-end;
 }
 
 #display-container {
@@ -387,12 +407,16 @@ button:not(:focus-visible):not(:disabled) {
 }
 
 #close-history-btn:hover,
-#del-history-btn:hover {
+#del-history-btn:hover,
+#rec-left-btn:hover,
+#rec-right-btn:hover {
     color: var(--button-color-bright-hover);
 }
 
 #close-history-btn:active,
-#del-history-btn:active {
+#del-history-btn:active,
+#rec-left-btn:active,
+#rec-right-btn:active {
     color: var(--button-color-bright-active);
 }
 
@@ -569,9 +593,13 @@ button:not(:focus-visible):not(:disabled) {
     #calculator.history::before {
         display: none;
     }
-
+    
     #history-btn {
         display: none;
+    }
+
+    #record-btn-container {
+        grid-area: 1/1/2/5;
     }
 
     #history {

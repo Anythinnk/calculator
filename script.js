@@ -1,8 +1,10 @@
 // to-do
-// add buttons to scroll recordEle
+// add function to scroll recordEle
 const calcEle = document.querySelector('#calculator');
 const recordEle = document.querySelector('#record');
 const displayEle = document.querySelector('#display');
+const recordLBtn = document.querySelector('#rec-left-btn');
+const recordRBtn = document.querySelector('#rec-right-btn');
 const immediateFuncs = ['percent', 'inverse', 'squared', 'sqrt', 'negative'];
 const calcOnNextFuncs = ['divide', 'multiply', 'subtract', 'add'];
 const identifierSymbol = {
@@ -45,6 +47,8 @@ const validKeysToID = {
 }
 const defaultDispFontSize = `${pxToRem(window.getComputedStyle(displayEle).fontSize)}rem`;
 const defaultRecFontSize = `${pxToRem(window.getComputedStyle(recordEle).fontSize)}rem`;
+const defaultRecBtnFontSize = `${pxToRem(window.getComputedStyle(recordLBtn).fontSize)}rem`;
+const minFontSize = 0.8; // rem
 
 const numDecimals = 15;
 const dispInputLimit = 16;
@@ -335,8 +339,7 @@ function addToHistory() {
         loadVarsFrom(historyRecord);
         displayHistRecord(historyRecord);
         resetFontSizes();
-        fitFont(displayEle);
-        fitFont(recordEle);
+        fitFont(displayEle, recordEle);
         if (histCloseBtn.style.display !== 'none') {
             histCloseBtn.click();
         }
@@ -477,8 +480,7 @@ function enableButtons() {
     mainBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             resetFontSizes();
-            fitFont(displayEle);
-            fitFont(recordEle);
+            fitFont(displayEle, recordEle);
         })
     })
 }
@@ -512,6 +514,8 @@ function enableOperators() {
 function resetFontSizes() {
     displayEle.style.fontSize = defaultDispFontSize;
     recordEle.style.fontSize = defaultRecFontSize;
+    recordLBtn.style.fontSize = defaultRecBtnFontSize;
+    recordRBtn.style.fontSize = defaultRecBtnFontSize;
 }
 
 function strLenAtLimit(str, limit) {
@@ -519,33 +523,37 @@ function strLenAtLimit(str, limit) {
     return onlyLetters.length >= limit;
 }
 
-function fitFont(elem) {    // assumes elem is a p element within a container
-    let isFlexEnd;
-    if (window.getComputedStyle(elem).alignSelf === 'flex-end') {
-        elem.style.alignSelf = 'flex-start';
-        isFlexEnd = true;
-    }
-
-    let currFontSize = pxToRem(window.getComputedStyle(elem).fontSize);
-    let heightReq = elem.parentElement.scrollHeight;
-    let heightNow = elem.parentElement.clientHeight;
-    let widthReq = elem.parentElement.scrollWidth;
-    let widthNow = elem.parentElement.clientWidth;
-    while (heightReq > heightNow || widthReq > widthNow) {
-        widthNow = elem.parentElement.clientWidth;
-        heightNow = elem.parentElement.clientHeight;
-        currFontSize -= 0.1;
-        currFontSize = round(currFontSize, 1);
-        elem.style.fontSize = `${currFontSize}rem`;
-        heightReq = elem.parentElement.scrollHeight;
-        widthReq = elem.parentElement.scrollWidth;
-        if (currFontSize <= 0) {
-            break;
+function fitFont() {    // assumes elem with font to fit is within a container, accepts multiple elems
+    for (let i = 0; i < arguments.length; i++) {
+        
+        let elem = arguments[i];
+        let isFlexEnd;
+        if (window.getComputedStyle(elem).alignSelf === 'flex-end') {
+            elem.style.alignSelf = 'flex-start';
+            isFlexEnd = true;
         }
-    }
-    
-    if (isFlexEnd) {
-        elem.style.alignSelf = 'flex-end';
+
+        let currFontSize = pxToRem(window.getComputedStyle(elem).fontSize);
+        let heightReq = elem.parentElement.scrollHeight;
+        let heightNow = elem.parentElement.clientHeight;
+        let widthReq = elem.parentElement.scrollWidth;
+        let widthNow = elem.parentElement.clientWidth;
+        while (heightReq > heightNow || widthReq > widthNow) {
+            widthNow = elem.parentElement.clientWidth;
+            heightNow = elem.parentElement.clientHeight;
+            currFontSize -= 0.1;
+            currFontSize = round(currFontSize, 1);
+            elem.style.fontSize = `${currFontSize}rem`;
+            heightReq = elem.parentElement.scrollHeight;
+            widthReq = elem.parentElement.scrollWidth;
+            if (currFontSize <= minFontSize) {
+                break;
+            }
+        }
+        
+        if (isFlexEnd) {
+            elem.style.alignSelf = 'flex-end';
+        }
     }
 }
 
@@ -558,12 +566,10 @@ function pxToRem(str) {
 }
 
 function enableResizeEvents() {
-    fitFont(displayEle);
-    fitFont(recordEle);
+    fitFont(displayEle, recordEle, recordLBtn, recordRBtn);
     window.addEventListener('resize', () => {
         resetFontSizes();
-        fitFont(displayEle);
-        fitFont(recordEle);
+        fitFont(displayEle, recordEle, recordLBtn, recordRBtn);
     });
 }
 
