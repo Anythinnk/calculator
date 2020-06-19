@@ -203,15 +203,16 @@ body {
     min-height: 1rem;
     border: none;
     margin: 0 1rem;
-    display: flex;
-    justify-content: flex-end;
-    overflow-x: hidden;
+    position: relative;
+    overflow: hidden;
 }
 
 #record {
-    align-self: flex-end;
     padding: 0;
     margin: 0;
+    position: absolute;
+    right: 0;
+    bottom: 0;
     font-size: 1.2rem;
     white-space: nowrap;
 }

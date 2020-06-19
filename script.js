@@ -339,7 +339,8 @@ function addToHistory() {
         loadVarsFrom(historyRecord);
         displayHistRecord(historyRecord);
         resetFontSizes();
-        fitFont(displayEle, recordEle);
+        fitFontY(recordEle);
+        fitFontX(displayEle);
         if (histCloseBtn.style.display !== 'none') {
             histCloseBtn.click();
         }
@@ -472,7 +473,7 @@ function enableButtons() {
     numberBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             numberInput(btn.textContent);
-            fitFont(displayEle);
+            fitFontX(displayEle);
         })
     })
 
@@ -480,7 +481,7 @@ function enableButtons() {
     mainBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             resetFontSizes();
-            fitFont(displayEle, recordEle);
+            fitFontX(displayEle);
         })
     })
 }
@@ -523,7 +524,7 @@ function strLenAtLimit(str, limit) {
     return onlyLetters.length >= limit;
 }
 
-function fitFont() {    // assumes elem with font to fit is within a container, accepts multiple elems
+function fitFontX() {    // assumes elem with font to fit is within a container, accepts multiple elems
     for (let i = 0; i < arguments.length; i++) {
         
         let elem = arguments[i];
@@ -534,17 +535,13 @@ function fitFont() {    // assumes elem with font to fit is within a container, 
         }
 
         let currFontSize = pxToRem(window.getComputedStyle(elem).fontSize);
-        let heightReq = elem.parentElement.scrollHeight;
-        let heightNow = elem.parentElement.clientHeight;
         let widthReq = elem.parentElement.scrollWidth;
         let widthNow = elem.parentElement.clientWidth;
-        while (heightReq > heightNow || widthReq > widthNow) {
+        while (widthReq > widthNow) {
             widthNow = elem.parentElement.clientWidth;
-            heightNow = elem.parentElement.clientHeight;
             currFontSize -= 0.1;
             currFontSize = round(currFontSize, 1);
             elem.style.fontSize = `${currFontSize}rem`;
-            heightReq = elem.parentElement.scrollHeight;
             widthReq = elem.parentElement.scrollWidth;
             if (currFontSize <= minFontSize) {
                 break;
@@ -553,6 +550,44 @@ function fitFont() {    // assumes elem with font to fit is within a container, 
         
         if (isFlexEnd) {
             elem.style.alignSelf = 'flex-end';
+        }
+    }
+}
+
+function fitFontY() {    // assumes elem with font to fit is within a container, accepts multiple elems
+    for (let i = 0; i < arguments.length; i++) {
+        
+        let elem = arguments[i];
+        let isFlexEnd;
+        let isAbsPos;
+        if (window.getComputedStyle(elem).alignSelf === 'flex-end') {
+            elem.style.alignSelf = 'flex-start';
+            isFlexEnd = true;
+        }
+        if (window.getComputedStyle(elem).position === 'absolute') {
+            elem.style.position = 'relative';
+            isAbsPos = true;
+        }
+
+        let currFontSize = pxToRem(window.getComputedStyle(elem).fontSize);
+        let heightReq = elem.parentElement.scrollHeight;
+        let heightNow = elem.parentElement.clientHeight;
+        while (heightReq > heightNow) {
+            heightNow = elem.parentElement.clientHeight;
+            currFontSize -= 0.1;
+            currFontSize = round(currFontSize, 1);
+            elem.style.fontSize = `${currFontSize}rem`;
+            heightReq = elem.parentElement.scrollHeight;
+            if (currFontSize <= minFontSize) {
+                break;
+            }
+        }
+        
+        if (isFlexEnd) {
+            elem.style.alignSelf = 'flex-end';
+        }
+        if (isAbsPos) {
+            elem.style.position = 'absolute';
         }
     }
 }
@@ -566,10 +601,12 @@ function pxToRem(str) {
 }
 
 function enableResizeEvents() {
-    fitFont(displayEle, recordEle, recordLBtn, recordRBtn);
+    fitFontY(displayEle, recordEle, recordLBtn, recordRBtn);
+    fitFontX(displayEle);
     window.addEventListener('resize', () => {
         resetFontSizes();
-        fitFont(displayEle, recordEle, recordLBtn, recordRBtn);
+        fitFontY(displayEle, recordEle, recordLBtn, recordRBtn);
+        fitFontX(displayEle);
     });
 }
 
