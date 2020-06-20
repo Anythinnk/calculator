@@ -1,5 +1,3 @@
-// to-do
-// add function to scroll recordEle
 const calcEle = document.querySelector('#calculator');
 const recordEle = document.querySelector('#record');
 const displayEle = document.querySelector('#display');
@@ -48,6 +46,7 @@ const validKeysToID = {
 const defaultDispFontSize = `${pxToRem(window.getComputedStyle(displayEle).fontSize)}rem`;
 const defaultRecFontSize = `${pxToRem(window.getComputedStyle(recordEle).fontSize)}rem`;
 const defaultRecBtnFontSize = `${pxToRem(window.getComputedStyle(recordLBtn).fontSize)}rem`;
+const recScrollDuration = Number(window.getComputedStyle(recordEle).transitionDuration.slice(0,-1)); // seconds
 const minFontSize = 0.8; // rem
 
 const numDecimals = 15;
@@ -338,8 +337,10 @@ function addToHistory() {
     historyRecord.addEventListener('click', () => {
         loadVarsFrom(historyRecord);
         displayHistRecord(historyRecord);
+        resetRecAlignment();
+        refreshRecBtns();
         resetFontSizes();
-        fitFontY(recordEle);
+        fitFontY(recordEle, displayEle, recordLBtn, recordRBtn);
         fitFontX(displayEle);
         if (histCloseBtn.style.display !== 'none') {
             histCloseBtn.click();
@@ -474,16 +475,24 @@ function enableButtons() {
         btn.addEventListener('click', () => {
             numberInput(btn.textContent);
             fitFontX(displayEle);
+            checkRecAlignment();
+            refreshRecBtns();
         })
     })
 
     const mainBtns = document.querySelectorAll('.operator, .display-edit');
     mainBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+            checkRecAlignment();
+            refreshRecBtns();
             resetFontSizes();
+            fitFontY(recordEle, displayEle, recordLBtn, recordRBtn);
             fitFontX(displayEle);
         })
     })
+
+    recordLBtn.addEventListener('click', () => recordScroll('left'));
+    recordRBtn.addEventListener('click', () => recordScroll('right'));
 }
 
 function enableKeyPress() {
@@ -600,10 +609,54 @@ function pxToRem(str) {
     return pxNum/rootNum;
 }
 
+function refreshRecBtns() {
+    let recordWidth = recordEle.scrollWidth;
+    let currOffset = Number(window.getComputedStyle(recordEle).right.slice(0,-2)); // +ve is shifted left (should not happen), -ve is shifted right
+    let containerWidth = recordEle.parentElement.clientWidth;
+    recordRBtn.style.display = (currOffset < -0.01) ? 'initial' : 'none';
+    recordLBtn.style.display = (recordWidth > containerWidth - currOffset + 0.01) ? 'initial' : 'none';
+}
+
+function recordScroll(direction) {
+    let recordWidth = recordEle.scrollWidth;
+    let currOffset = Number(window.getComputedStyle(recordEle).right.slice(0,-2)); // +ve is shifted left (should not happen), -ve is shifted right
+    let containerWidth = recordEle.parentElement.clientWidth;
+    switch (direction) {
+        case 'left':
+            currOffset -= Math.min(0.75*containerWidth, recordWidth - containerWidth + currOffset);
+            break;
+        case 'right':
+            currOffset += Math.min(0.75*containerWidth, -currOffset);
+    }
+    recordEle.style.right = `${Math.round(currOffset)}px`;
+    setTimeout(refreshRecBtns, recScrollDuration*1.1*1000);
+}
+
+function checkRecAlignment() {
+    let recordWidth = recordEle.scrollWidth;
+    let currOffset = Number(window.getComputedStyle(recordEle).right.slice(0,-2)); // +ve is shifted left (should not happen), -ve is shifted right
+    let containerWidth = recordEle.parentElement.clientWidth;
+    if (currOffset !== 0 && recordWidth + currOffset < containerWidth) {
+        currOffset = -Math.max(recordWidth - containerWidth, 0);
+        recordEle.style.transition = 'none';
+        recordEle.style.right = `${currOffset}px`;
+        recordEle.offsetHeight; // hack to trigger css reflow, if not will still animate the next line
+        recordEle.style.transition = `right ${recScrollDuration}s`;
+    }
+}
+
+function resetRecAlignment() {
+    recordEle.style.transition = 'none';
+    recordEle.style.right = '0px';
+    recordEle.offsetHeight;
+    recordEle.style.transition = `right ${recScrollDuration}s`;
+}
+
 function enableResizeEvents() {
-    fitFontY(displayEle, recordEle, recordLBtn, recordRBtn);
-    fitFontX(displayEle);
+    fitFontY(displayEle);
     window.addEventListener('resize', () => {
+        checkRecAlignment();
+        refreshRecBtns();
         resetFontSizes();
         fitFontY(displayEle, recordEle, recordLBtn, recordRBtn);
         fitFontX(displayEle);
