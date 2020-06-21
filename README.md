@@ -5,7 +5,7 @@ This project is a browser-based simple calculator, inspired by the Windows 10 ca
 - Scrollable equation display for longer equations
 - History functionality until page exit / reload
 - Responsive calculator size / layout and dynamic font sizes
-- Click / keyboard input
+- Keyboard input support
 - Light / dark mode
 
 These are the skills learnt and/or demonstrated through this project:
